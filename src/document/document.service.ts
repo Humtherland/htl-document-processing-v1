@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
+import multer from 'multer';
 
 @Injectable()
 export class DocumentService {
-  create(createDocumentDto: CreateDocumentDto) {
-    return 'This action adds a new document';
+
+  create(dto: CreateDocumentDto, file: Express.Multer.File) {    
+    if (file === undefined) {
+      throw new BadRequestException('There was an error trying to process the file. File is undefined');
+    }
+    return file;
   }
 
   findAll() {

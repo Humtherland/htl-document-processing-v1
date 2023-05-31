@@ -1,15 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { destinationFile, fileFilter, renameFile, returnBytes } from './utils/templates.util';
 
 @Controller('document')
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
   @Post()
-  create(@Body() createDocumentDto: CreateDocumentDto) {
-    return this.documentService.create(createDocumentDto);
+  @UseInterceptors(FileInterceptor('document', {
+    storage: diskStorage({
+      destination: destinationFile,
+      filename: renameFile
+    }),
+    fileFilter: fileFilter,
+    limits: { fileSize: returnBytes('1MB') }
+  }))
+  create(
+    @Body() dto: CreateDocumentDto,
+    @UploadedFile() file: Express.Multer.File) {
+    return this.documentService.create(dto, file);
   }
 
   @Get()
